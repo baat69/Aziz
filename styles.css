@@ -1,135 +1,69 @@
-body {
-    margin: 0;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    background-color: #f0f0f0;
+const platform = document.getElementById('platform');
+const ball = document.getElementById('ball');
+const leftBtn = document.getElementById('leftBtn');
+const rightBtn = document.getElementById('rightBtn');
+const player1Score = document.getElementById('player1-score');
+const player2Score = document.getElementById('player2-score');
+
+let ballPosition = 0;
+let ballVelocity = 0;
+let player1Points = 0;
+let player2Points = 0;
+let gameActive = true;
+
+const IMPULSE_FORCE = 2;
+const FRICTION = 0.98;
+const PLATFORM_WIDTH = 380; // Updated from 300
+const MAX_BALL_MOVEMENT = (PLATFORM_WIDTH - 30) / 2; // Now based on platform width
+
+function updateBall() {
+    if (!gameActive) return;
+
+    // Apply friction to gradually slow down
+    ballVelocity *= FRICTION;
+
+    // Update position based on velocity
+    ballPosition += ballVelocity;
+
+    // Check if ball reaches platform edges
+    if (Math.abs(ballPosition) >= MAX_BALL_MOVEMENT) {
+        const winner = ballPosition < 0 ? 2 : 1;
+        player1Points += winner === 1 ? 1 : 0;
+        player2Points += winner === 2 ? 1 : 0;
+        updateScores();
+        resetRound(`Player ${winner} scores!`);
+        return;
+    }
+
+    // Apply visual updates
+    ball.style.transform = `translateX(calc(-50% + ${ballPosition}px)) rotate(${ballPosition * 2}deg)`;
 }
 
-.container {
-    display: flex;
-    align-items: center;
-    gap: 20px;
+function pushBall(direction) {
+    if (!gameActive) return;
+    ballVelocity += direction * IMPULSE_FORCE;
 }
 
-.game-container {
-    width: 400px;
-    height: 500px;
-    position: relative;
-    border: 2px solid #333;
-    background: linear-gradient(180deg, #87CEEB, #4682B4);
-    overflow: hidden;
-    perspective: 1000px;
+function updateScores() {
+    player1Score.textContent = `Player 1: ${player1Points}`;
+    player2Score.textContent = `Player 2: ${player2Points}`;
 }
 
-#platform {
-    width: 160px;
-    height: 25px;
-    position: absolute;
-    bottom: 150px;
-    left: 50%;
-    transform: translateX(-50%) rotate(0deg);
-    transform-origin: center;
-    transition: transform 0.1s ease-out;
+function resetRound(message) {
+    gameActive = false;
+    alert(message);
+    ballPosition = 0;
+    ballVelocity = 0;
+    ball.style.transform = `translateX(-50%) rotate(0deg)`;
+    setTimeout(() => gameActive = true, 1000);
 }
 
-.platform-texture {
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, #8B4513, #A0522D);
-    border-radius: 5px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-}
+// Button controls
+leftBtn.addEventListener('click', () => pushBall(-1));
+rightBtn.addEventListener('click', () => pushBall(1));
 
-#ball {
-    width: 30px;
-    height: 30px;
-    position: absolute;
-    bottom: 175px;
-    left: 50%;
-    transform: translateX(-50%);
-    transform-origin: bottom center;
-    transition: transform 0.05s linear;
-}
+// Game loop
+setInterval(updateBall, 16);
 
-#ball::after {
-    content: '';
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    background: radial-gradient(circle at 30% 30%, #ff6b6b, #cc0000);
-    border-radius: 50%;
-    box-shadow: inset -4px -4px 8px rgba(0, 0, 0, 0.3);
-}
-
-.ball-shadow {
-    position: absolute;
-    width: 100%;
-    height: 10px;
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: 50%;
-    filter: blur(4px);
-    bottom: -20px;
-}
-
-.scores {
-    display: flex;
-    justify-content: space-between;
-    width: 400px;
-    margin-bottom: 20px;
-    font-size: 24px;
-    font-weight: bold;
-}
-
-.controls {
-    position: absolute;
-    bottom: 40px;
-    width: 100%;
-    display: flex;
-    justify-content: space-around;
-}
-
-button {
-    padding: 15px 30px;
-    font-size: 18px;
-    cursor: pointer;
-    background: linear-gradient(180deg, #4CAF50, #45a049);
-    color: white;
-    border: none;
-    border-radius: 5px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    transition: all 0.2s;
-}
-
-button:hover {
-    background-color: #45a049;
-}
-
-button:active {
-    transform: translateY(2px);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-#display {
-    font-size: 24px;
-    min-width: 50px;
-    text-align: center;
-}
-
-#score {
-    margin-top: 20px;
-    font-size: 24px;
-    font-weight: bold;
-}
-
-/* Remove these animations */
-@keyframes rollBall {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
-
-.rolling {
-    animation: none;
-}
+// Initialize
+updateScores();
