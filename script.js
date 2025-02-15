@@ -5,55 +5,43 @@ const rightBtn = document.getElementById('rightBtn');
 const player1Score = document.getElementById('player1-score');
 const player2Score = document.getElementById('player2-score');
 
-let platformAngle = 0;
 let ballPosition = 0;
 let ballVelocity = 0;
 let player1Points = 0;
 let player2Points = 0;
 let gameActive = true;
 
-const GRAVITY = 0.08;
-const FRICTION = 0.995;
-const MAX_ANGLE = 30;
-const BALL_MAX_SPEED = 3;
+const IMPULSE_FORCE = 2;
+const FRICTION = 0.98;
+const PLATFORM_WIDTH = 380; // Updated from 300
+const MAX_BALL_MOVEMENT = (PLATFORM_WIDTH - 30) / 2; // Now based on platform width
 
-let isFalling = false;
-
-function updateBallPhysics() {
+function updateBall() {
     if (!gameActive) return;
-    
-    // More realistic ball physics with speed limit
-    const gravityEffect = Math.sin(platformAngle * Math.PI / 180) * GRAVITY;
-    ballVelocity += gravityEffect;
-    
-    // Apply friction
+
+    // Apply friction to gradually slow down
     ballVelocity *= FRICTION;
-    
-    // Limit ball speed
-    if (Math.abs(ballVelocity) > BALL_MAX_SPEED) {
-        ballVelocity = Math.sign(ballVelocity) * BALL_MAX_SPEED;
-    }
-    
+
+    // Update position based on velocity
     ballPosition += ballVelocity;
-    
-    // Keep ball within limits
-    const maxDistance = 50;
-    if (Math.abs(ballPosition) > maxDistance) {
-        if (Math.abs(ballPosition) > maxDistance + 20) {
-            const fellOnLeft = ballPosition < 0;
-            if (fellOnLeft) {
-                player2Points++;
-            } else {
-                player1Points++;
-            }
-            updateScores();
-            resetRound(fellOnLeft ? 'Player 2 scores!' : 'Player 1 scores!');
-            return;
-        }
+
+    // Check if ball reaches platform edges
+    if (Math.abs(ballPosition) >= MAX_BALL_MOVEMENT) {
+        const winner = ballPosition < 0 ? 2 : 1;
+        player1Points += winner === 1 ? 1 : 0;
+        player2Points += winner === 2 ? 1 : 0;
+        updateScores();
+        resetRound(`Player ${winner} scores!`);
+        return;
     }
-    
-    // Update ball position
-    ball.style.transform = `translateX(calc(-50% + ${ballPosition}px))`;
+
+    // Apply visual updates
+    ball.style.transform = `translateX(calc(-50% + ${ballPosition}px)) rotate(${ballPosition * 2}deg)`;
+}
+
+function pushBall(direction) {
+    if (!gameActive) return;
+    ballVelocity += direction * IMPULSE_FORCE;
 }
 
 function updateScores() {
@@ -64,42 +52,18 @@ function updateScores() {
 function resetRound(message) {
     gameActive = false;
     alert(message);
-    platformAngle = 0;
     ballPosition = 0;
     ballVelocity = 0;
-    platform.style.transform = `translateX(-50%) rotate(${platformAngle}deg)`;
-    ball.style.transform = `translateX(-50%)`;
+    ball.style.transform = `translateX(-50%) rotate(0deg)`;
     setTimeout(() => gameActive = true, 1000);
 }
 
-// Update autoTilt for smoother movement
-function autoTilt() {
-    if (!gameActive) return;
-    
-    // More gradual tilting
-    platformAngle += (Math.random() - 0.5) * 2; // Reduced from 3
-    platformAngle = Math.max(-MAX_ANGLE, Math.min(MAX_ANGLE, platformAngle));
-    platform.style.transform = `translateX(-50%) rotate(${platformAngle}deg)`;
-}
+// Button controls
+leftBtn.addEventListener('click', () => pushBall(-1));
+rightBtn.addEventListener('click', () => pushBall(1));
 
-// Reverse controls for competitive gameplay
-leftBtn.addEventListener('click', () => {
-    if (!gameActive) return;
-    platformAngle = Math.min(MAX_ANGLE, platformAngle + 8);
-    platform.style.transform = `translateX(-50%) rotate(${platformAngle}deg)`;
-});
+// Game loop
+setInterval(updateBall, 16);
 
-rightBtn.addEventListener('click', () => {
-    if (!gameActive) return;
-    platformAngle = Math.max(-MAX_ANGLE, platformAngle - 8);
-    platform.style.transform = `translateX(-50%) rotate(${platformAngle}deg)`;
-});
-
-// Adjust game loop timing
-clearInterval(updateBallPhysics); // Clear any existing intervals
-clearInterval(autoTilt);
-setInterval(updateBallPhysics, 20); // Slightly slower updates (was 16)
-setInterval(autoTilt, 2000); // Slower tilting (was 1500)
-
-// Initialize game
+// Initialize
 updateScores();
