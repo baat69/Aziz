@@ -1,0 +1,135 @@
+body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: #f0f0f0;
+}
+
+.container {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.game-container {
+    width: 400px;
+    height: 500px;
+    position: relative;
+    border: 2px solid #333;
+    background: linear-gradient(180deg, #87CEEB, #4682B4);
+    overflow: hidden;
+    perspective: 1000px;
+}
+
+#platform {
+    width: 160px;
+    height: 25px;
+    position: absolute;
+    bottom: 150px;
+    left: 50%;
+    transform: translateX(-50%) rotate(0deg);
+    transform-origin: center;
+    transition: transform 0.1s ease-out;
+}
+
+.platform-texture {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, #8B4513, #A0522D);
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+#ball {
+    width: 30px;
+    height: 30px;
+    position: absolute;
+    bottom: 175px;
+    left: 50%;
+    transform: translateX(-50%);
+    transform-origin: bottom center;
+    transition: transform 0.05s linear;
+}
+
+#ball::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at 30% 30%, #ff6b6b, #cc0000);
+    border-radius: 50%;
+    box-shadow: inset -4px -4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.ball-shadow {
+    position: absolute;
+    width: 100%;
+    height: 10px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 50%;
+    filter: blur(4px);
+    bottom: -20px;
+}
+
+.scores {
+    display: flex;
+    justify-content: space-between;
+    width: 400px;
+    margin-bottom: 20px;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.controls {
+    position: absolute;
+    bottom: 40px;
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+}
+
+button {
+    padding: 15px 30px;
+    font-size: 18px;
+    cursor: pointer;
+    background: linear-gradient(180deg, #4CAF50, #45a049);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: all 0.2s;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+button:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+#display {
+    font-size: 24px;
+    min-width: 50px;
+    text-align: center;
+}
+
+#score {
+    margin-top: 20px;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+/* Remove these animations */
+@keyframes rollBall {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.rolling {
+    animation: none;
+}
