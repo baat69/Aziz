@@ -6,26 +6,22 @@ const player1Score = document.getElementById('player1-score');
 const player2Score = document.getElementById('player2-score');
 
 let ballPosition = 0;
-let ballVelocity = 0;
+let ballDirection = 0;
 let player1Points = 0;
 let player2Points = 0;
 let gameActive = true;
 
-const IMPULSE_FORCE = 2;
-const FRICTION = 0.98;
-const PLATFORM_WIDTH = 380; // Updated from 300
-const MAX_BALL_MOVEMENT = (PLATFORM_WIDTH - 30) / 2; // Now based on platform width
+const PLATFORM_WIDTH = 380;
+const MAX_BALL_MOVEMENT = (PLATFORM_WIDTH - 30) / 2;
+const BALL_SPEED = 1; // Speed calibrated for ~6 seconds cross time
 
 function updateBall() {
     if (!gameActive) return;
 
-    // Apply friction to gradually slow down
-    ballVelocity *= FRICTION;
+    // Update position based on direction
+    ballPosition += ballDirection * BALL_SPEED;
 
-    // Update position based on velocity
-    ballPosition += ballVelocity;
-
-    // Check if ball reaches platform edges
+    // Check boundaries
     if (Math.abs(ballPosition) >= MAX_BALL_MOVEMENT) {
         const winner = ballPosition < 0 ? 2 : 1;
         player1Points += winner === 1 ? 1 : 0;
@@ -39,9 +35,9 @@ function updateBall() {
     ball.style.transform = `translateX(calc(-50% + ${ballPosition}px)) rotate(${ballPosition * 2}deg)`;
 }
 
-function pushBall(direction) {
+function setBallDirection(direction) {
     if (!gameActive) return;
-    ballVelocity += direction * IMPULSE_FORCE;
+    ballDirection = direction;
 }
 
 function updateScores() {
@@ -53,14 +49,14 @@ function resetRound(message) {
     gameActive = false;
     alert(message);
     ballPosition = 0;
-    ballVelocity = 0;
+    ballDirection = 0;
     ball.style.transform = `translateX(-50%) rotate(0deg)`;
     setTimeout(() => gameActive = true, 1000);
 }
 
-// Button controls
-leftBtn.addEventListener('click', () => pushBall(-1));
-rightBtn.addEventListener('click', () => pushBall(1));
+// Reversed button controls
+rightBtn.addEventListener('click', () => setBallDirection(-1)); // Move left when right button pressed
+leftBtn.addEventListener('click', () => setBallDirection(1));  // Move right when left button pressed
 
 // Game loop
 setInterval(updateBall, 16);
